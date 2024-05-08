@@ -1,5 +1,8 @@
-import { app } from './server';
+import { KVStore } from './kv_store';
+import { Server } from './server';
 
-app.listen(3000, () => {
-  console.log('Server listening on port 3000');
-});
+const kvStore = new KVStore();
+
+const server: Server = new Server(kvStore);
+
+server.start(3000);
