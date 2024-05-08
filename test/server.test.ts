@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { Express } from 'express';
 import request from 'supertest';
-import { app } from '../src/server';
+import { Server } from '../src/server';
+import { KVStore } from '../src/kv_store';
 
 describe('Express app', () => {
+  let app: Express;
   beforeEach(() => {
+    app = new Server(new KVStore()).app;
     vi.useFakeTimers();
   });
 
