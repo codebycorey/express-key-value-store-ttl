@@ -10,6 +10,13 @@ export class KVStore {
   private store: Map<string, StoreValue> = new Map<string, StoreValue>();
   private expiresMinHeap: KVMinHeap = new KVMinHeap();
 
+  /**
+   * Set key value pair in store
+   * @param key string
+   * @param value string | number
+   * @param ttlSeconds number | undefined
+   * @returns void
+   */
   public set(key: string, value: string | number, ttlSeconds?: number): void {
     const storeValue: StoreValue = { value, ttlSeconds };
     if (ttlSeconds) {
@@ -19,8 +26,20 @@ export class KVStore {
     if (storeValue.expiresAt) {
       this.expiresMinHeap.insert({ key, value: storeValue.expiresAt });
     }
+
+    // auto delete key after ttlSeconds
+    if (ttlSeconds) {
+      setTimeout(() => {
+        this.delete(key);
+      }, ttlSeconds * 1000);
+    }
   }
 
+  /**
+   * Get value from storeValue if key exists and not expired
+   * @param key string
+   * @returns string | number | undefined
+   */
   public get(key: string): string | number | undefined {
     const storeValue = this.store.get(key);
 
@@ -41,6 +60,10 @@ export class KVStore {
     this.expiresMinHeap.delete(key);
   }
 
+  /**
+   * Drop all expired keys
+   * backup plan in case the setTimeout fails, service restarts
+   */
   public dropExpired(): void {
     const peek = this.expiresMinHeap.peek();
 
