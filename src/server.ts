@@ -5,6 +5,9 @@ import { KVStore } from './kv_store';
 type SetBody = { key: string; value: string; ttlSeconds?: number };
 type KeyParams = { key: string };
 
+type ServerConfig = {
+  kvStore: KVStore;
+};
 export class Server {
   public get app(): Express {
     return this._app;
@@ -13,7 +16,7 @@ export class Server {
   private _app: Express;
   private _kvStore: KVStore;
 
-  constructor(kvStore: KVStore) {
+  constructor({ kvStore }: ServerConfig) {
     this._app = express();
     this._app.use(express.json());
     this._kvStore = kvStore;
@@ -37,6 +40,11 @@ export class Server {
     this._app.get<KeyParams>('/get/:key', (req: Request, res: Response) => {
       const { key } = req.params;
       const value = this._kvStore.get(key);
+      // send 404 if key not found
+      if (value === undefined) {
+        res.status(404).send();
+        return;
+      }
       res.send(value);
     });
 

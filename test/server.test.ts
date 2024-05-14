@@ -7,7 +7,7 @@ import { KVStore } from '../src/kv_store';
 describe('Express app', () => {
   let app: Express;
   beforeEach(() => {
-    app = new Server(new KVStore()).app;
+    app = new Server({ kvStore: new KVStore() }).app;
     vi.useFakeTimers();
   });
 
@@ -43,7 +43,7 @@ describe('Express app', () => {
     const response = await request(app).get('/get/key1').expect(200);
     expect(response.text).toEqual('value1');
 
-    const expiredResponse = await request(app).get('/get/key2').expect(200);
+    const expiredResponse = await request(app).get('/get/key2').expect(404);
     expect(expiredResponse.text).toEqual('');
   });
 
@@ -54,8 +54,7 @@ describe('Express app', () => {
 
     expect(response.text).toEqual('Key key1 deleted');
 
-    const getResponse = await request(app).get('/get/key1').expect(200);
-
+    const getResponse = await request(app).get('/get/key1').expect(404);
     expect(getResponse.text).toEqual('');
   });
 
@@ -75,8 +74,8 @@ describe('Express app', () => {
     expect(response.text).toEqual('Removed all expired keys');
 
     // Check that the first key has been removed and the second key is still there
-    const getResponse1 = await request(app).get('/get/key1').expect(200);
-
+    // expect 404 error
+    const getResponse1 = await request(app).get('/get/key1').expect(404);
     expect(getResponse1.text).toEqual('');
 
     const getResponse2 = await request(app).get('/get/key2').expect(200);

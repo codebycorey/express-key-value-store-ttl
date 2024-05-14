@@ -6,9 +6,22 @@ type StoreValue = {
   expiresAt?: Date;
 };
 
+export type KVStoreConfig = {
+  dropExpiredInterval?: number;
+};
+
 export class KVStore {
   private store: Map<string, StoreValue> = new Map<string, StoreValue>();
   private expiresMinHeap: KVMinHeap = new KVMinHeap();
+
+  constructor({ dropExpiredInterval }: KVStoreConfig = {}) {
+    if (!dropExpiredInterval) {
+      // drop expired keys every dropExpiredInterval
+      setInterval(() => {
+        this.dropExpired();
+      }, dropExpiredInterval);
+    }
+  }
 
   /**
    * Set key value pair in store
@@ -25,13 +38,6 @@ export class KVStore {
     this.store.set(key, storeValue);
     if (storeValue.expiresAt) {
       this.expiresMinHeap.insert({ key, value: storeValue.expiresAt });
-    }
-
-    // auto delete key after ttlSeconds
-    if (ttlSeconds) {
-      setTimeout(() => {
-        this.delete(key);
-      }, ttlSeconds * 1000);
     }
   }
 

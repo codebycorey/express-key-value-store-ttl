@@ -45,6 +45,7 @@ export class KVMinHeap {
 
     if (index !== this.heap.length - 1) {
       this.heap[index] = this.heap.pop() as MinHeapValue;
+      this.keyToIndex.set(this.heap[index].key, index);
       this.heapifyDown(index);
       this.heapifyUp(index);
     } else {
@@ -58,7 +59,7 @@ export class KVMinHeap {
     }
 
     const parentIndex = this.parent(index);
-    const parentValue = this.heap[parentIndex].value;
+    const parentValue = this.heap[parentIndex]?.value;
     const value = this.heap[index].value;
 
     if (value < parentValue) {
